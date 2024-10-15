@@ -27,7 +27,7 @@ jobs:
           sudo apt-get update
           wget https://github.com/jthomperoo/simple-proxy/releases/download/v1.2.0/simple-proxy_linux_amd64.zip
           unzip -d simple-proxy simple-proxy_linux_amd64.zip
-          cp simple-proxy/simple-proxy ./
+          cp simple-proxy/simple-proxy ../
           rm -r simple-proxy/ simple-proxy_linux_amd64.zip
       - name: Cache apt packages
         uses: awalsh128/cache-apt-pkgs-action@latest
