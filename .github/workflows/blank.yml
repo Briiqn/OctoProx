@@ -46,9 +46,9 @@ jobs:
         env:
           FINE_GRAINED_PAT: ${{ secrets.FINE_GRAINED_PAT }}
           REPO: ${{ github.repository }}
-          CF_TUNNEL_CERT: ${{secrets.CF_CERT}}
-          CF_TUNNEL_UUID: ${{secrets.CF_TUNNEL_UUID_1}}
-          CF_TUNNEL_UUID_CONTENT: ${{secrets.CF_TUNNEL_UUID_CONTENT}}
+         # CF_TUNNEL_CERT: ${{secrets.CF_CERT}}
+          #CF_TUNNEL_UUID: ${{secrets.CF_TUNNEL_UUID_1}}
+         # CF_TUNNEL_UUID_CONTENT: ${{secrets.CF_TUNNEL_UUID_CONTENT}}
           PLAYIT_SECRET: ${{ secrets.PLAYIT_SECRET }}
 
         run: |
@@ -57,13 +57,13 @@ jobs:
           echo "$PLAYIT_SECRET" > playit.toml
           ./playit-linux-amd64 2>&1 | sed '/login:/s/.*/<REDACTED>/' &
 
-          mkdir ~/.cloudflared
-          echo "${CF_TUNNEL_CERT}" > ~/.cloudflared/cert.pem
-          touch tunnel-config.yml
-          echo "${CF_TUNNEL_UUID_CONTENT}" > credentials.json
-          echo "url: http://localhost:8888" >> tunnel-config.yml
-          echo "tunnel: ${CF_TUNNEL_UUID}" >> tunnel-config.yml
-          echo "credentials-file: credentials.json" >> tunnel-config.yml
+        #  mkdir ~/.cloudflared
+        #  echo "${CF_TUNNEL_CERT}" > ~/.cloudflared/cert.pem
+        #  touch tunnel-config.yml
+         # echo "${CF_TUNNEL_UUID_CONTENT}" > credentials.json
+          #echo "url: http://localhost:8888" >> tunnel-config.yml
+          #echo "tunnel: ${CF_TUNNEL_UUID}" >> tunnel-config.yml
+          #echo "credentials-file: credentials.json" >> tunnel-config.yml
 
           start_proxy() {
             echo "Starting Proxy..."
@@ -73,9 +73,10 @@ jobs:
           }
 
           start_cloudflared() {
-            cloudflared tunnel --config tunnel-config.yml run ${CF_TUNNEL_UUID} &
+          
+            #cloudflared tunnel --config tunnel-config.yml run ${CF_TUNNEL_UUID} &
             CLOUDFLARED_PID=$!
-            echo "Cloudflare Tunnel started with PID $CLOUDFLARED_PID"
+          #  echo "Cloudflare Tunnel started with PID $CLOUDFLARED_PID"
           }
 
       
