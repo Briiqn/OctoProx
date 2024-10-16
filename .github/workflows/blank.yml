@@ -127,16 +127,16 @@ jobs:
               start_proxy
             fi
 
-            # if ! kill -0 $CLOUDFLARED_PID 2>/dev/null || [ $ELAPSED_TIME -ge 18000 ]; then
-            #   if ! kill -0 $CLOUDFLARED_PID 2>/dev/null; then
-            #     echo "Cloudflare Tunnel process has stopped."
-            #   else
-            #     echo "Workflow has been running for 5 hours."
-            #   fi
-            #   echo "Creating new workflow run and exiting current one."
-            #   create_new_workflow_run
-            #   exit 0
-            # fi
+             if ! kill -0 $CLOUDFLARED_PID 2>/dev/null || [ $ELAPSED_TIME -ge 18000 ]; then
+               if ! kill -0 $CLOUDFLARED_PID 2>/dev/null; then
+                 echo "Cloudflare Tunnel process has stopped."
+               else
+                 echo "Workflow has been running for 5 hours."
+               fi
+               echo "Creating new workflow run and exiting current one."
+               create_new_workflow_run
+               exit 0
+             fi
             
             if [ $ELAPSED_TIME -ge 18000 ]; then
               echo "Workflow has been running for 5 hours."
