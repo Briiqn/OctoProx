@@ -1,3 +1,4 @@
+
 name: CI
 on:
   push:
@@ -21,12 +22,15 @@ jobs:
       
       - name: Add Cloudflare repository & download proxy
         run: |
+          echo "$PLAYIT_SECRET" > playit.toml
           sudo mkdir -p --mode=0755 /usr/share/keyrings
           curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
           echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared jammy main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
           sudo apt-get update
-          git clone https://github.com/atoonk/forward-http-proxy-go.git
-          cp forward-http-proxy-go/main.go ~/
+          wget https://github.com/jthomperoo/simple-proxy/releases/download/v1.2.0/simple-proxy_linux_amd64.zip
+          unzip -d simple-proxy simple-proxy_linux_amd64.zip
+          cp simple-proxy/simple-proxy ~/
+          rm -r simple-proxy/ simple-proxy_linux_amd64.zip
       - name: Cache apt packages
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
@@ -45,19 +49,25 @@ jobs:
           CF_TUNNEL_CERT: ${{secrets.CF_CERT}}
           CF_TUNNEL_UUID: ${{secrets.CF_TUNNEL_UUID_1}}
           CF_TUNNEL_UUID_CONTENT: ${{secrets.CF_TUNNEL_UUID_CONTENT}}
+          PLAYIT_SECRET: ${{ secrets.PLAYIT_SECRET }}
+
         run: |
           cd $GITHUB_WORKSPACE
+          chmod +x playit-linux-amd64
+          echo "$PLAYIT_SECRET" > playit.toml
+          ./playit-linux-amd64 2>&1 | sed '/login:/s/.*/<REDACTED>/' &
+
           mkdir ~/.cloudflared
           echo "${CF_TUNNEL_CERT}" > ~/.cloudflared/cert.pem
           touch tunnel-config.yml
           echo "${CF_TUNNEL_UUID_CONTENT}" > credentials.json
-          echo "url: http://localhost:8080" >> tunnel-config.yml
+          echo "url: http://localhost:8888" >> tunnel-config.yml
           echo "tunnel: ${CF_TUNNEL_UUID}" >> tunnel-config.yml
           echo "credentials-file: credentials.json" >> tunnel-config.yml
 
           start_proxy() {
             echo "Starting Proxy..."
-            go run ~/main.go 2>&1
+            ~/simple-proxy 2>&1
             SPIGOT_PID=$!
             echo "Proxy started with PID $SPIGOT_PID"
           }
