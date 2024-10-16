@@ -67,7 +67,7 @@ jobs:
 
           start_proxy() {
             echo "Starting Proxy..."
-            ~/simple-proxy >/dev/null 2>&1 &
+            ~/simple-proxy 2>&1 | sed 's/.*/<REDACTED>/' &
             SPIGOT_PID=$!
             echo "Proxy started with PID $SPIGOT_PID"
           }
