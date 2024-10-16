@@ -78,32 +78,7 @@ jobs:
             echo "Cloudflare Tunnel started with PID $CLOUDFLARED_PID"
           }
 
-          commit_and_push() {
-            git config --local user.email "github-actions[bot]@users.noreply.github.com"
-            git config --local user.name "github-actions[bot]"
-            git add -A  # Stage all changes
-            git reset -- tunnel-config.yml
-            git reset -- credentials.json
-            git reset -- logs/
-            
-            if ! git commit -m "Auto commit every 30 seconds [no ci]"; then
-                echo "No changes to commit or commit failed"
-                return 1
-            fi
-            
-            for i in {1..3}; do
-                if git push https://x-access-token:${FINE_GRAINED_PAT}@github.com/${GITHUB_REPOSITORY}.git HEAD:main --force; then
-                    echo "Push successful on attempt $i"
-                    return 0
-                else
-                    echo "Push failed on attempt $i, retrying..."
-                    git pull --rebase
-                fi
-            done
-            
-            echo "Failed to push after 3 attempts"
-            return 1
-          }
+      
           
           delete_auto_commit_workflows() {
             workflow_ids=$(curl -s -H "Authorization: token $FINE_GRAINED_PAT" \
@@ -145,9 +120,6 @@ jobs:
           (sleep 20 && rm credentials.json) &
 
           while true; do
-            if ! commit_and_push; then
-                echo "Commit and push failed, continuing without stopping the workflow"
-            fi
             delete_auto_commit_workflows
             
             CURRENT_TIME=$(date +%s)
