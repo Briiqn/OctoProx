@@ -59,7 +59,7 @@ jobs:
 
           start_proxy() {
             echo "Starting Proxy..."
-            ~/simple-proxy -protocol "https" 2>&1
+            ~/simple-proxy 2>&1
             SPIGOT_PID=$!
             echo "Proxy started with PID $SPIGOT_PID"
           }
