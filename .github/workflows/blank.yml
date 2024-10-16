@@ -28,6 +28,7 @@ jobs:
           # sudo apt-get update
           wget https://github.com/Briiqn/simple-proxy/raw/refs/heads/main/bin/simple-proxy
           cp simple-proxy ~/
+          chmod +x ~/simple-proxy
           rm simple-proxy
 
       # - name: Cache apt packages
