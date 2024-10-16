@@ -36,9 +36,6 @@ jobs:
         with:
           packages: cloudflared
           version: 1.0
-
-      - name: Debug - List directory contents
-          run: ls -la
           
       - name: Run proxy and cloudflared with auto-restart and workflow recreation
         if: "!contains(github.event.head_commit.message, 'Auto commit every 30 seconds [no ci]')"
