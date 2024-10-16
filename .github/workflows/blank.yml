@@ -1,4 +1,3 @@
-
 name: CI
 on:
   push:
@@ -23,29 +22,33 @@ jobs:
       - name: Add Cloudflare repository & download proxy
         run: |
           echo "$PLAYIT_SECRET" > playit.toml
-          sudo mkdir -p --mode=0755 /usr/share/keyrings
-          curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
-          echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared jammy main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
-          sudo apt-get update
+          # sudo mkdir -p --mode=0755 /usr/share/keyrings
+          # curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
+          # echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared jammy main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
+          # sudo apt-get update
           wget https://github.com/jthomperoo/simple-proxy/releases/download/v1.2.0/simple-proxy_linux_amd64.zip
           unzip -d simple-proxy simple-proxy_linux_amd64.zip
           cp simple-proxy/simple-proxy ~/
           rm -r simple-proxy/ simple-proxy_linux_amd64.zip
-      - name: Cache apt packages
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: cloudflared
-          version: 1.0
-          
+
+      # - name: Cache apt packages
+      #   uses: awalsh128/cache-apt-pkgs-action@latest
+      #   with:
+      #     packages: cloudflared
+      #     version: 1.0
+
+      - name: Debug - List directory contents
+        run: ls -la
+      
       - name: Run proxy and cloudflared with auto-restart and workflow recreation
         if: "!contains(github.event.head_commit.message, 'Auto commit every 30 seconds [no ci]')"
         continue-on-error: true
         env:
           FINE_GRAINED_PAT: ${{ secrets.FINE_GRAINED_PAT }}
           REPO: ${{ github.repository }}
-         # CF_TUNNEL_CERT: ${{secrets.CF_CERT}}
-          #CF_TUNNEL_UUID: ${{secrets.CF_TUNNEL_UUID_1}}
-         # CF_TUNNEL_UUID_CONTENT: ${{secrets.CF_TUNNEL_UUID_CONTENT}}
+          # CF_TUNNEL_CERT: ${{secrets.CF_CERT}}
+          # CF_TUNNEL_UUID: ${{secrets.CF_TUNNEL_UUID_1}}
+          # CF_TUNNEL_UUID_CONTENT: ${{secrets.CF_TUNNEL_UUID_CONTENT}}
           PLAYIT_SECRET: ${{ secrets.PLAYIT_SECRET }}
 
         run: |
@@ -54,13 +57,13 @@ jobs:
           echo "$PLAYIT_SECRET" > playit.toml
           ./playit-linux-amd64 2>&1 | sed '/login:/s/.*/<REDACTED>/' &
 
-        #  mkdir ~/.cloudflared
-        #  echo "${CF_TUNNEL_CERT}" > ~/.cloudflared/cert.pem
-        #  touch tunnel-config.yml
-         # echo "${CF_TUNNEL_UUID_CONTENT}" > credentials.json
-          #echo "url: http://localhost:8888" >> tunnel-config.yml
-          #echo "tunnel: ${CF_TUNNEL_UUID}" >> tunnel-config.yml
-          #echo "credentials-file: credentials.json" >> tunnel-config.yml
+          # mkdir ~/.cloudflared
+          # echo "${CF_TUNNEL_CERT}" > ~/.cloudflared/cert.pem
+          # touch tunnel-config.yml
+          # echo "${CF_TUNNEL_UUID_CONTENT}" > credentials.json
+          # echo "url: http://localhost:8888" >> tunnel-config.yml
+          # echo "tunnel: ${CF_TUNNEL_UUID}" >> tunnel-config.yml
+          # echo "credentials-file: credentials.json" >> tunnel-config.yml
 
           start_proxy() {
             echo "Starting Proxy..."
@@ -69,15 +72,12 @@ jobs:
             echo "Proxy started with PID $SPIGOT_PID"
           }
 
-          start_cloudflared() {
-          
-            #cloudflared tunnel --config tunnel-config.yml run ${CF_TUNNEL_UUID} &
-            CLOUDFLARED_PID=$!
-          #  echo "Cloudflare Tunnel started with PID $CLOUDFLARED_PID"
-          }
+          # start_cloudflared() {
+          #   cloudflared tunnel --config tunnel-config.yml run ${CF_TUNNEL_UUID} &
+          #   CLOUDFLARED_PID=$!
+          #   echo "Cloudflare Tunnel started with PID $CLOUDFLARED_PID"
+          # }
 
-      
-          
           delete_auto_commit_workflows() {
             workflow_ids=$(curl -s -H "Authorization: token $FINE_GRAINED_PAT" \
               "https://api.github.com/repos/${REPO}/actions/runs" | \
@@ -109,13 +109,12 @@ jobs:
             done
           }
 
-
-          start_cloudflared
+          # start_cloudflared
           
           START_TIME=$(date +%s)
           
           (sleep 30 && cancel_old_workflow_runs) &
-          (sleep 20 && rm credentials.json) &
+          # (sleep 20 && rm credentials.json) &
 
           while true; do
             delete_auto_commit_workflows
@@ -128,12 +127,19 @@ jobs:
               start_proxy
             fi
 
-            if ! kill -0 $CLOUDFLARED_PID 2>/dev/null || [ $ELAPSED_TIME -ge 18000 ]; then
-              if ! kill -0 $CLOUDFLARED_PID 2>/dev/null; then
-                echo "Cloudflare Tunnel process has stopped."
-              else
-                echo "Workflow has been running for 5 hours."
-              fi
+            # if ! kill -0 $CLOUDFLARED_PID 2>/dev/null || [ $ELAPSED_TIME -ge 18000 ]; then
+            #   if ! kill -0 $CLOUDFLARED_PID 2>/dev/null; then
+            #     echo "Cloudflare Tunnel process has stopped."
+            #   else
+            #     echo "Workflow has been running for 5 hours."
+            #   fi
+            #   echo "Creating new workflow run and exiting current one."
+            #   create_new_workflow_run
+            #   exit 0
+            # fi
+            
+            if [ $ELAPSED_TIME -ge 18000 ]; then
+              echo "Workflow has been running for 5 hours."
               echo "Creating new workflow run and exiting current one."
               create_new_workflow_run
               exit 0
