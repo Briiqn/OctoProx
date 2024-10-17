@@ -104,7 +104,7 @@ jobs:
             
             echo "$workflow_runs" | jq -r ".workflow_runs[] | select(.id != $current_run_id) | .id" | while read -r run_id; do
               echo "Cancelling workflow run $run_id"
-              curl -s -X POST -H "Authorization: token $FINE_GRAINED_PAT" \
+              #curl -s -X POST -H "Authorization: token $FINE_GRAINED_PAT" \
                 "https://api.github.com/repos/${REPO}/actions/runs/$run_id/cancel"
             done
           }
