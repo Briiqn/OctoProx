@@ -3,7 +3,7 @@
 OctoProx is a locally hosted HTTP(S) proxy server that runs on GitHub Actions' runners, utilizing [Playit](https://playit.gg/) to provide a reverse proxy connection. This setup enables public access to your locally hosted proxy server.
 
 ## How It Works
-OctoProx uses the [simple-proxy](https://github.com/jthomperoo/simple-proxy) server to manage HTTP(S) traffic. The server runs on GitHub Actions' runners, and Playit is used to expose the local server to the internet via a reverse proxy.
+OctoProx uses my fork of [simple-proxy](https://github.com/jthomperoo/simple-proxy) server to manage HTTP(S) traffic. The server runs on GitHub Actions' runners, and Playit is used to expose the local server to the internet via a reverse proxy.
 
 ### Quick Start
 To use the proxy, connect to the following address:
