@@ -9,7 +9,7 @@ OctoProx uses my fork of [simple-proxy](https://github.com/jthomperoo/simple-pro
 To use the proxy, connect to the following address:
 
 **Proxy Address:** `147.185.221.23:21506`  
-**Protocol:** HTTP(S)
+**Protocol:** HTTP/SSL
 
 ### Features
 - **Locally Hosted on GitHub Runners**: The proxy is hosted locally on GitHub's infrastructure, but made publicly accessible using Playit.
