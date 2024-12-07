@@ -18,59 +18,6 @@ jobs:
           fetch-tags: false
           persist-credentials: true
           token: ${{ secrets.FINE_GRAINED_PAT }}  # Use fine-grained PAT for checkout
-      - name: Install Chocolatey and WireGuard Tools
-        shell: powershell
-        run: |
-          Set-ExecutionPolicy Bypass -Scope Process -Force
-          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-          
-          # Install Chocolatey
-          Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-          
-          # Install WireGuard
-          choco install wireguard -y
-          
-          # Download WGCF
-          $wgcfPath = "C:\ProgramData\wgcf\wgcf.exe"
-          New-Item -ItemType Directory -Path "C:\ProgramData\wgcf" -Force | Out-Null
-          Invoke-WebRequest -Uri "https://github.com/ViRb3/wgcf/releases/download/v2.2.23/wgcf_2.2.23_windows_amd64.exe" -OutFile $wgcfPath
-          
-          # Debug: List wgcf directory contents
-          Get-ChildItem "C:\ProgramData\wgcf"
-          
-          # Add to system PATH
-          $env:Path += ";C:\ProgramData\wgcf"
-          [Environment]::SetEnvironmentVariable("Path", $env:Path, "Machine")
-
-      - name: Configure WireGuard
-        shell: powershell
-        env:
-          WGCF_ACCOUNT: ${{ secrets.WGCF_ACCOUNT }}
-        run: |
-          # Verify wgcf executable
-          $wgcfExe = "C:\ProgramData\wgcf\wgcf.exe"
-          
-          # Verify file exists and is executable
-          if (Test-Path $wgcfExe) {
-            Write-Host "WGCF executable found at $wgcfExe"
-            
-            # Set executable permissions
-            icacls $wgcfExe /grant:r "$($env:USERNAME):(RX)"
-            
-            # Register with WGCF account configuration
-            $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
-            [System.IO.File]::WriteAllLines("$env:GITHUB_WORKSPACE\wgcf-account.toml", $env:WGCF_ACCOUNT, $Utf8NoBomEncoding)
-            
-            # Use full path to execute wgcf
-            & $wgcfExe register --config "$env:GITHUB_WORKSPACE\wgcf-account.toml"
-            
-            # Generate WireGuard configuration
-            & $wgcfExe generate
-          } else {
-            Write-Error "WGCF executable not found at $wgcfExe"
-            exit 1
-          }
-
       - name: Download proxy and setup
         shell: powershell
         run: |
