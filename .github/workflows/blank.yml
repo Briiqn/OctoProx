@@ -18,7 +18,42 @@ jobs:
           fetch-tags: false
           persist-credentials: true
           token: ${{ secrets.FINE_GRAINED_PAT }}  # Use fine-grained PAT for checkout
-      
+      - name: Install Chocolatey and WireGuard Tools
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+          
+          # Install Chocolatey
+          Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          
+          # Install WireGuard
+          choco install wireguard -y
+          
+          # Download WGCF
+          $wgcfPath = "C:\ProgramData\wgcf\wgcf.exe"
+          New-Item -ItemType Directory -Path "C:\ProgramData\wgcf" -Force | Out-Null
+          Invoke-WebRequest -Uri "https://github.com/ViRb3/wgcf/releases/download/v2.2.23/wgcf_2.2.23_windows_amd64.exe" -OutFile $wgcfPath
+          
+          # Add to system PATH
+          $env:Path += ";C:\ProgramData\wgcf"
+          [Environment]::SetEnvironmentVariable("Path", $env:Path, "Machine")
+
+      - name: Configure WireGuard
+        shell: powershell
+        env:
+          WGCF_ACCOUNT: ${{ secrets.WGCF_ACCOUNT }}
+        run: |
+          # Register with WGCF account configuration
+          $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
+          [System.IO.File]::WriteAllLines("$env:GITHUB_WORKSPACE\wgcf-account.toml", $env:WGCF_ACCOUNT, $Utf8NoBomEncoding)
+          
+          # Register with WGCF
+          wgcf register --config "$env:GITHUB_WORKSPACE\wgcf-account.toml"
+          
+          # Generate WireGuard configuration
+          wgcf generate
+
       - name: Download proxy and setup
         shell: powershell
         run: |
@@ -50,7 +85,10 @@ jobs:
           # Create playit configuration
           $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
           [System.IO.File]::WriteAllLines("$env:GITHUB_WORKSPACE\playit.toml", $env:PLAYIT_SECRET, $Utf8NoBomEncoding)
-
+          $wireguardPath = "C:\Program Files\WireGuard\wireguard.exe"
+          
+          # Install WireGuard tunnel service
+          & "$wireguardPath" /installtunnelservice "$env:GITHUB_WORKSPACE\wgcf-profile.conf"
           # Start functions
           function Start-Proxy {
             Write-Host "Starting Proxy..."
