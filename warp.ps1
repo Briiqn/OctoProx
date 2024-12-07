@@ -42,7 +42,7 @@ function Connect-WireGuard {
     $currentDirectory = Get-Location
     Write-Host "Current Directory: $currentDirectory" -ForegroundColor Magenta
     $wireguardPath = "C:\Program Files\WireGuard\wireguard.exe"
-    & "$wireguardPath" /installtunnelservice "$PWD/wgcf-profile.conf" /dumplog
+    & "$wireguardPath" /dumplog /installtunnelservice "$PWD/wgcf-profile.conf"
     Write-Host "Checking new IP address..." -ForegroundColor Green
     $newIP = (Invoke-RestMethod -Uri "http://ifconfig.me/ip").Trim()
     Write-Host "New IP Address: $newIP" -ForegroundColor Cyan
