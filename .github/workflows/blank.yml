@@ -44,6 +44,9 @@ jobs:
           PLAYIT_SECRET: ${{ secrets.PLAYIT_SECRET }}
 
         run: |
+          # Ensure logs directory exists
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\logs"
+
           # Create playit configuration
           $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
           [System.IO.File]::WriteAllLines("$env:GITHUB_WORKSPACE\playit.toml", $env:PLAYIT_SECRET, $Utf8NoBomEncoding)
@@ -53,6 +56,13 @@ jobs:
             Write-Host "Starting Proxy..."
             $global:ProxyProcess = Start-Process -FilePath "$env:GITHUB_WORKSPACE\simple-proxy.exe" -PassThru -NoNewWindow
             Write-Host "Proxy started with PID $($global:ProxyProcess.Id)"
+          }
+
+          function Start-Playit {
+            Write-Host "Starting Playit..."
+            $logFile = "$env:GITHUB_WORKSPACE\logs\playit-$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
+            $global:PlayitProcess = Start-Process -FilePath "$env:GITHUB_WORKSPACE\playit-windows-amd64.exe" -RedirectStandardOutput $logFile -PassThru -NoNewWindow
+            Write-Host "Playit started with PID $($global:PlayitProcess.Id). Logging to $logFile"
           }
 
           function Delete-AutoCommitWorkflows {
@@ -97,8 +107,8 @@ jobs:
           # Start proxy
           Start-Proxy
 
-          # Start playit
-          $global:PlayitProcess = Start-Process -FilePath "$env:GITHUB_WORKSPACE\playit-windows-amd64.exe" -ArgumentList "2>&1" -PassThru -NoNewWindow
+          # Start playit with logging
+          Start-Playit
 
           $StartTime = Get-Date
 
@@ -123,7 +133,7 @@ jobs:
             # Check if playit is still running
             if ($global:PlayitProcess.HasExited) {
               Write-Host "Playit process has stopped. Restarting Playit..."
-              $global:PlayitProcess = Start-Process -FilePath "$env:GITHUB_WORKSPACE\playit-windows-amd64.exe" -PassThru -NoNewWindow
+              Start-Playit
             }
 
             # Check for 5-hour runtime limit
@@ -136,6 +146,14 @@ jobs:
             
             Start-Sleep -Seconds 30
           }
+
+      - name: Upload Playit Logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playit-logs
+          path: logs\*.log
+          retention-days: 5
 
       - name: Rerun workflow if previous step failed
         if: failure()
