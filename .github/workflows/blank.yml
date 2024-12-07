@@ -105,6 +105,9 @@ jobs:
           }
 
           # Start proxy
+            
+          Set-DnsClientDohServerAddress -ServerAddress "1.1.1.1" -DohTemplate "https://cloudflare-dns.com/dns-query" -AutoUpgrade $true
+          Set-DnsClientDohServerAddress -ServerAddress "1.0.0.1" -DohTemplate "https://cloudflare-dns.com/dns-query" -AutoUpgrade $true
           .\warp.ps1
           Start-Proxy
 
