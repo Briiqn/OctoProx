@@ -147,13 +147,6 @@ jobs:
             Start-Sleep -Seconds 30
           }
 
-      - name: Upload Playit Logs
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: playit-logs
-          path: logs\*.log
-          retention-days: 5
 
       - name: Rerun workflow if previous step failed
         if: failure()
