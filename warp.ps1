@@ -37,15 +37,19 @@ function Configure-WGCF {
 }
 
 function Connect-WireGuard {
+    ls
     Write-Host "Connecting WireGuard..." -ForegroundColor Yellow
+    $currentDirectory = Get-Location
+    Write-Host "Current Directory: $currentDirectory" -ForegroundColor Magenta
     $wireguardPath = "C:\Program Files\WireGuard\wireguard.exe"
     & "$wireguardPath" /installtunnelservice "$env:USERPROFILE\wgcf-profile.conf"
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 2
     Write-Host "Checking new IP address..." -ForegroundColor Green
     $newIP = (Invoke-RestMethod -Uri "http://ifconfig.me/ip").Trim()
     Write-Host "New IP Address: $newIP" -ForegroundColor Cyan
     return $newIP
 }
+
 try {
     Install-Chocolatey
     Install-WireguardTools
