@@ -18,6 +18,7 @@ jobs:
           fetch-tags: false
           persist-credentials: true
           token: ${{ secrets.FINE_GRAINED_PAT }}  # Use fine-grained PAT for checkout
+      
       - name: Download proxy and setup
         shell: powershell
         run: |
@@ -49,10 +50,7 @@ jobs:
           # Create playit configuration
           $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
           [System.IO.File]::WriteAllLines("$env:GITHUB_WORKSPACE\playit.toml", $env:PLAYIT_SECRET, $Utf8NoBomEncoding)
-          $wireguardPath = "C:\Program Files\WireGuard\wireguard.exe"
-          
-          # Install WireGuard tunnel service
-          & "$wireguardPath" /installtunnelservice "$env:GITHUB_WORKSPACE\wgcf-profile.conf"
+
           # Start functions
           function Start-Proxy {
             Write-Host "Starting Proxy..."
@@ -107,6 +105,7 @@ jobs:
           }
 
           # Start proxy
+          .\warp.ps1
           Start-Proxy
 
           # Start playit with logging
