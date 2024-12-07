@@ -42,7 +42,7 @@ function Connect-WireGuard {
     & "$wireguardPath" /installtunnelservice "$env:USERPROFILE\wgcf-profile.conf"
     Start-Sleep -Seconds 5
     Write-Host "Checking new IP address..." -ForegroundColor Green
-    $newIP = Invoke-WebRequest -Uri "https://ip.me" | Select-Object -ExpandProperty Content
+    $newIP = (Invoke-RestMethod -Uri "http://ifconfig.me/ip").Trim()
     Write-Host "New IP Address: $newIP" -ForegroundColor Cyan
     return $newIP
 }
