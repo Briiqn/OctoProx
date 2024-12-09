@@ -145,7 +145,7 @@ jobs:
               Write-Host "Workflow has been running for 5 hours."
               Write-Host "Creating new workflow run and exiting current one."
               Create-NewWorkflowRun
-              exit 0
+             
             }
             
             Start-Sleep -Seconds 30
