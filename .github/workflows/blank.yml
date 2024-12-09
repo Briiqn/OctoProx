@@ -84,7 +84,7 @@ jobs:
               "Authorization" = "token $env:FINE_GRAINED_PAT"
               "Accept" = "application/vnd.github.v3+json"
             }
-            Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/$env:REPO/actions/workflows/CI.yml/dispatches" -Headers $headers -Body '{"ref":"main"}'
+            Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/$env:REPO/actions/workflows/blank.yml/dispatches" -Headers $headers -Body '{"ref":"main"}'
             Write-Host "New workflow run created"
           }
 
